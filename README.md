@@ -1,6 +1,6 @@
 # WebNirvaan - Services Website
 
-A modern, professional website for showcasing web development, app development, and other digital services.
+A modern, professional website for showcasing web development, app development, and other digital services..
 
 ## Features
 
