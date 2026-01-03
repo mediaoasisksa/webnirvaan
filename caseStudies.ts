@@ -1,6 +1,6 @@
 export const caseStudies = [
     {
-      slug: "jynak-ai",  
+      slug: "jynak-ai",      
       title: "Jynak AI – AI Platform Development Case Study",
       client: "Jynak AI",
       website: "https://jynak.ai",
