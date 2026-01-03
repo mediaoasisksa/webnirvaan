@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const lead = {
     email,
     page,
-    summary: messages.slice(-3).map(m => m.content).join(" "),
+    summary: messages.slice(-3).map((m: { content: string }) => m.content).join(" "),
     createdAt: new Date(),
   };
 
