@@ -4,7 +4,7 @@
 
 1. **Install dependencies:**
    ```bash
-   npm install            
+   npm install
    ```
 
 2. **Create `.env` file:**

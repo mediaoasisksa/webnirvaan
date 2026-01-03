@@ -16,13 +16,9 @@
     "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
     "next": "^14.0.4",
-    "nodemailer": "^7.0.12",
-    "openai": "^6.15.0",
-    "openapi": "^1.0.0",
+    "nodemailer": "^6.9.7",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

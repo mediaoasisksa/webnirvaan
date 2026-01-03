@@ -1,9 +1,28 @@
 import { openai } from "@/lib/openai";
+import { knowledgeBase } from "@/data/knowledge";
 
 export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages, page } = await req.json();
+
+  /* ================= SYSTEM PROMPT ================= */
+
+  const systemPrompt = `
+You are WebNirvaan AI, a professional web & AI consultant.
+
+Current page: ${page}
+
+Guidelines:
+- If page includes "pricing", focus on costs, packages, timelines.
+- If page includes "work" or "portfolio", explain case studies and results.
+- Otherwise, provide general guidance.
+
+Use the following company knowledge when answering:
+${knowledgeBase}
+`;
+
+  /* ================= OPENAI STREAM ================= */
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -11,10 +30,9 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "system",
-        content:
-          "You are WebNirvaan AI, a professional web & AI consultant. Remember context and respond concisely.",
+        content: systemPrompt,
       },
-      ...messages,
+      ...messages, // ← user + assistant conversation
     ],
   });
 
@@ -30,7 +48,7 @@ export async function POST(req: Request) {
           }
         }
       } catch (err) {
-        console.error("Stream error:", err);
+        console.error("AI stream error:", err);
       } finally {
         controller.close();
       }

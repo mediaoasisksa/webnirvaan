@@ -14,7 +14,7 @@ const STORAGE_KEY = "webnirvaan-ai-chat";
 const SUGGESTIONS = [
   {
     label: "💰 Get Pricing",
-    prompt: "I want an estimate for building a website for my business.",
+    prompt: "I want pricing for building a website for my business.",
   },
   {
     label: "🔍 Run SEO Audit",
@@ -26,7 +26,7 @@ const SUGGESTIONS = [
   },
   {
     label: "👨‍💼 Talk to Expert",
-    prompt: "I want to talk to an expert about my project requirements.",
+    prompt: "I want to talk to an expert about my project.",
   },
 ];
 
@@ -39,31 +39,32 @@ export default function AiChatbot() {
   const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  /* ================= LOAD FROM SESSION ================= */
+  const pageContext =
+    typeof window !== "undefined" ? window.location.pathname : "/";
+
+  /* ---------- LOAD FROM LOCAL STORAGE ---------- */
   useEffect(() => {
-    const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      setMessages(JSON.parse(saved));
-    }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setMessages(JSON.parse(saved));
     setHydrated(true);
   }, []);
 
-  /* ================= SAVE TO SESSION ================= */
+  /* ---------- SAVE TO LOCAL STORAGE ---------- */
   useEffect(() => {
     if (!hydrated) return;
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, hydrated]);
 
-  /* ================= CLEAR CHAT ================= */
+  /* ---------- CLEAR CHAT ---------- */
   const clearChat = () => {
-    if (!confirm("Clear this chat conversation?")) return;
-    sessionStorage.removeItem(STORAGE_KEY);
+    if (!confirm("Clear this conversation?")) return;
+    localStorage.removeItem(STORAGE_KEY);
     setMessages([]);
     setInput("");
   };
 
-  /* ================= SEND MESSAGE ================= */
+  /* ---------- SEND MESSAGE ---------- */
   const sendMessage = async (text?: string) => {
     const messageText = text ?? input;
     if (!messageText.trim() || loading) return;
@@ -87,6 +88,7 @@ export default function AiChatbot() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: contextMessages,
+        page: pageContext,
       }),
     });
 
@@ -122,7 +124,7 @@ export default function AiChatbot() {
     setLoading(false);
   };
 
-  /* ================= CLOSED STATE ================= */
+  /* ---------- CLOSED STATE ---------- */
   if (!isOpen) {
     return (
       <button
@@ -148,58 +150,40 @@ export default function AiChatbot() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b font-semibold">
         <span>🤖 WebNirvaan AI</span>
-
-        <div className="flex gap-3 text-gray-500 items-center">
-          {/* Clear */}
+        <div className="flex gap-3 items-center text-gray-500">
           {messages.length > 0 && (
-            <button
-              onClick={clearChat}
-              title="Clear chat"
-              className="hover:text-red-500"
-            >
+            <button onClick={clearChat} title="Clear chat">
               🗑️
             </button>
           )}
-
-          {/* Minimize */}
-          <button
-            onClick={() => setIsMinimized(!isMinimized)}
-            aria-label="Minimize"
-          >
+          <button onClick={() => setIsMinimized(!isMinimized)}>
             {isMinimized ? "▢" : "—"}
           </button>
-
-          {/* Close */}
-          <button
-            onClick={() => setIsOpen(false)}
-            aria-label="Close"
-            className="hover:text-red-500"
-          >
+          <button onClick={() => setIsOpen(false)} className="hover:text-red-500">
             ✕
           </button>
         </div>
       </div>
 
-      {/* Chat Body */}
       {!isMinimized && (
         <>
+          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-gray-500">
                   How can I help you today?
                 </p>
-
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTIONS.map((item) => (
+                  {SUGGESTIONS.map((s) => (
                     <button
-                      key={item.label}
-                      onClick={() => sendMessage(item.prompt)}
+                      key={s.label}
+                      onClick={() => sendMessage(s.prompt)}
                       className="px-3 py-2 text-sm rounded-full border
                       bg-gradient-to-r from-purple-50 to-blue-50
-                      hover:from-purple-100 hover:to-blue-100 transition"
+                      hover:from-purple-100 hover:to-blue-100"
                     >
-                      {item.label}
+                      {s.label}
                     </button>
                   ))}
                 </div>
@@ -210,9 +194,7 @@ export default function AiChatbot() {
               <div
                 key={i}
                 className={`flex ${
-                  msg.role === "user"
-                    ? "justify-end"
-                    : "justify-start"
+                  msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
@@ -223,11 +205,35 @@ export default function AiChatbot() {
                   }`}
                 >
                   {msg.role === "assistant" ? (
-                    <div className="prose prose-sm max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {msg.content || (loading ? "Typing…" : "")}
-                      </ReactMarkdown>
-                    </div>
+                    <>
+                      <div className="prose prose-sm max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content || (loading ? "Typing…" : "")}
+                        </ReactMarkdown>
+                      </div>
+
+                      {/* Quick actions after AI reply */}
+                      {i === messages.length - 1 && !loading && (
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() =>
+                              sendMessage("I want pricing for my project")
+                            }
+                            className="text-xs px-3 py-1 rounded-full border"
+                          >
+                            💰 Get Pricing
+                          </button>
+                          <button
+                            onClick={() =>
+                              sendMessage("Run an SEO audit for my website")
+                            }
+                            className="text-xs px-3 py-1 rounded-full border"
+                          >
+                            🔍 SEO Audit
+                          </button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     msg.content
                   )}
