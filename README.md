@@ -4,7 +4,7 @@ A modern, professional website for showcasing web development, app development, 
 
 ## Features
 
-- 🎨 Modern, responsive design with Tailwind CSS
+- 🎨 Modern, responsive design with Tailwind CSS..
 - ⚡ Built with Next.js 14 and React  
 - 📱 Fully responsive and mobile-friendly
 - 🚀 Fast performance and SEO optimized..
