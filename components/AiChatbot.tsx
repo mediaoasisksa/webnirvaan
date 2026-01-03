@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, startTransition } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -10,339 +10,225 @@ type Message = {
 };
 
 const STORAGE_KEY = "webnirvaan-ai-chat";
+const MINIMIZED_KEY = "webnirvaan-ai-minimized";
+const WHATSAPP_LINK =
+  "https://wa.me/917827448032?text=Hi%20WebNirvaan%20👋%0AI%20just%20chatted%20with%20your%20AI%20assistant.";
 
 const SUGGESTIONS = [
-  {
-    label: "💰 Get Pricing",
-    prompt: "I want pricing for building a website for my business.",
-  },
-  {
-    label: "🔍 Run SEO Audit",
-    prompt: "Can you run a quick SEO audit for my website?",
-  },
-  {
-    label: "🛒 Build Ecommerce",
-    prompt: "I want to build an ecommerce website. What do you recommend?",
-  },
-  {
-    label: "👨‍💼 Talk to Expert",
-    prompt: "I want to talk to an expert about my project.",
-  },
+  { label: "💰 Get Pricing", prompt: "I want pricing for my website project." },
+  { label: "🔍 Run SEO Audit", prompt: "Please run an SEO audit for my website." },
+  { label: "🛒 Build Ecommerce", prompt: "I want to build an ecommerce website." },
+  { label: "👨‍💼 Talk to Expert", prompt: "I want to talk to an expert." },
 ];
 
 export default function AiChatbot() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const [unread, setUnread] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const clearingRef = useRef(false);
 
   const pageContext =
     typeof window !== "undefined" ? window.location.pathname : "/";
 
-  /* ---------- LOAD FROM LOCAL STORAGE ---------- */
+  /* ================= LOAD STATE ================= */
+
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setMessages(JSON.parse(saved));
-    setHydrated(true);
+
+    const minimized = localStorage.getItem(MINIMIZED_KEY);
+    if (minimized === "true") setIsMinimized(true);
   }, []);
 
-  /* ---------- SAVE TO LOCAL STORAGE (DEBOUNCED) ---------- */
+  /* ================= SAVE STATE ================= */
+
   useEffect(() => {
-    if (!hydrated) return;
-    
-    // Debounce localStorage save
-    const timeoutId = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-      } catch (e) {
-        console.error("Failed to save to localStorage", e);
-      }
-    }, 300);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    // Scroll to bottom (non-blocking)
-    requestAnimationFrame(() => {
-      if (bottomRef.current) {
-        bottomRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-    });
+  useEffect(() => {
+    localStorage.setItem(MINIMIZED_KEY, String(isMinimized));
+    if (!isMinimized) setUnread(0);
+  }, [isMinimized]);
 
-    return () => clearTimeout(timeoutId);
-  }, [messages, hydrated]);
+  /* ================= PROACTIVE TRIGGERS ================= */
 
-  /* ---------- CLEAR CHAT ---------- */
-  const clearChat = useCallback((e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-    
-    // Prevent multiple simultaneous clear operations
-    if (clearingRef.current) return;
-    clearingRef.current = true;
-    
-    // Use requestAnimationFrame to defer confirm and keep UI responsive
-    requestAnimationFrame(() => {
-      const shouldClear = window.confirm("Clear this conversation?");
-      clearingRef.current = false;
-      
-      if (!shouldClear) return;
-      
-      // Use scheduler API if available, otherwise requestIdleCallback
-      const scheduleWork = (callback: () => void) => {
-        if ('scheduler' in window && 'postTask' in (window as any).scheduler) {
-          (window as any).scheduler.postTask(callback, { priority: 'background' });
-        } else if ('requestIdleCallback' in window) {
-          requestIdleCallback(callback, { timeout: 100 });
-        } else {
-          setTimeout(callback, 0);
-        }
-      };
-      
-      scheduleWork(() => {
-        startTransition(() => {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch (err) {
-            console.error("Failed to clear localStorage", err);
-          }
-          // Batch all state updates
-          setMessages([]);
-          setInput("");
-        });
-      });
-    });
+  useEffect(() => {
+    if (sessionStorage.getItem("ai_prompted")) return;
+
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+      sessionStorage.setItem("ai_prompted", "true");
+    }, 15000);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  /* ---------- SEND MESSAGE ---------- */
-  const sendMessage = useCallback(async (text?: string) => {
+  useEffect(() => {
+    const onScroll = () => {
+      const percent =
+        window.scrollY /
+        (document.body.scrollHeight - window.innerHeight);
+
+      if (percent > 0.5) {
+        setIsOpen(true);
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([
+        {
+          role: "assistant",
+          content:
+            "👋 Hi! Want a free website or SEO audit? I can do it in 30 seconds.",
+        },
+      ]);
+    }
+  }, [isOpen]);
+
+  /* ================= CLEAR CHAT ================= */
+
+  const clearChat = useCallback(() => {
+    if (!confirm("Clear this conversation?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setMessages([]);
+    setInput("");
+  }, []);
+
+  /* ================= SEND MESSAGE (FIXED STREAMING) ================= */
+
+  const sendMessage = async (text?: string) => {
     const messageText = text ?? input;
     if (!messageText.trim() || loading) return;
 
-    const userMessage: Message = {
-      role: "user",
-      content: messageText,
-    };
-
+    const userMessage: Message = { role: "user", content: messageText };
     const contextMessages = [...messages, userMessage];
 
-    // Batch state updates
-    startTransition(() => {
-      setMessages([...contextMessages, { role: "assistant", content: "" }]);
-      setInput("");
-    });
+    setMessages([...contextMessages, { role: "assistant", content: "" }]);
+    setInput("");
     setLoading(true);
 
     try {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: contextMessages,
-          page: pageContext,
-        }),
+        body: JSON.stringify({ messages: contextMessages, page: pageContext }),
       });
 
       const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
+      const decoder = new TextDecoder("utf-8");
+      if (!reader) return;
 
-      if (!reader) {
-        setLoading(false);
-        return;
-      }
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-      let done = false;
-      let buffer = "";
-      let lastUpdate = Date.now();
-      const UPDATE_INTERVAL = 50; // Throttle updates to every 50ms
+        const chunk = decoder.decode(value, { stream: true });
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-
-        if (value) {
-          buffer += decoder.decode(value, { stream: true });
-        }
-
-        // Throttle state updates to prevent blocking
-        const now = Date.now();
-        if (done || now - lastUpdate >= UPDATE_INTERVAL) {
-          const contentToAdd = buffer;
-          buffer = "";
-          lastUpdate = now;
-
-          startTransition(() => {
-            setMessages((prev) => {
-              const updated = [...prev];
-              const lastIndex = updated.length - 1;
-              if (lastIndex >= 0) {
-                updated[lastIndex] = {
-                  ...updated[lastIndex],
-                  content: updated[lastIndex].content + contentToAdd,
-                };
-              }
-              return updated;
-            });
-          });
-        }
-      }
-
-      // Flush remaining buffer
-      if (buffer) {
-        startTransition(() => {
-          setMessages((prev) => {
-            const updated = [...prev];
-            const lastIndex = updated.length - 1;
-            if (lastIndex >= 0) {
-              updated[lastIndex] = {
-                ...updated[lastIndex],
-                content: updated[lastIndex].content + buffer,
-              };
-            }
-            return updated;
-          });
+        // ✅ Append ONLY the new chunk (no duplication)
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated.length - 1;
+          updated[last] = {
+            ...updated[last],
+            content: updated[last].content + chunk,
+          };
+          return updated;
         });
       }
-    } catch (error) {
-      console.error("Error sending message:", error);
+
+      // Auto-expand on AI reply
+      if (isMinimized) setIsMinimized(false);
+    } catch {
       setMessages((prev) => {
         const updated = [...prev];
-        const lastIndex = updated.length - 1;
-        if (lastIndex >= 0 && updated[lastIndex].content === "") {
-          updated[lastIndex] = {
-            ...updated[lastIndex],
-            content: "Sorry, an error occurred. Please try again.",
-          };
-        }
+        updated[updated.length - 1].content =
+          "Sorry, something went wrong. Please try again.";
         return updated;
       });
     } finally {
       setLoading(false);
     }
-  }, [input, messages, loading, pageContext]);
+  };
 
-  /* ---------- CLOSED STATE ---------- */
+  /* ================= UNREAD BADGE ================= */
+
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last && last.role === "assistant" && isMinimized && !loading) {
+      setUnread((u) => u + 1);
+    }
+  }, [messages, isMinimized, loading]);
+
+  /* ================= CLOSED STATE ================= */
+
   if (!isOpen) {
     return (
       <button
-        onClick={() => {
-          setIsOpen(true);
-          setIsMinimized(false);
-        }}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 z-50
         bg-gradient-to-r from-purple-600 to-blue-500
-        text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl
-        transition-all duration-200 text-sm sm:text-base
-        flex items-center gap-2"
+        text-white px-4 py-3 rounded-full shadow-lg"
       >
-        <span className="text-lg sm:text-xl">🤖</span>
-        <span className="hidden sm:inline">Chat with AI</span>
-        <span className="sm:hidden">AI</span>
+        🤖 Chat with AI
       </button>
     );
   }
 
   return (
     <div
-      className={`fixed z-50 bg-white shadow-2xl
-      flex flex-col transition-all duration-300
-      ${
-        isMinimized
-          ? "bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-64 sm:w-72 rounded-2xl"
-          : "inset-2 sm:inset-4 sm:bottom-6 sm:right-6 sm:inset-auto sm:h-[520px] sm:w-96 sm:rounded-2xl rounded-xl"
-      }`}
+      className={`fixed bottom-6 right-6 z-50 bg-white shadow-2xl rounded-2xl
+      w-96 transition-all duration-300
+      ${isMinimized ? "h-14" : "h-[520px]"}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 sm:bg-white">
-        <div className="flex items-center gap-2">
-          <span className="text-lg sm:text-xl">🤖</span>
-          <span className="font-semibold text-sm sm:text-base text-gray-900">WebNirvaan AI</span>
-        </div>
-        <div className="flex gap-2 sm:gap-3 items-center text-gray-500">
-          {messages.length > 0 && !isMinimized && (
-            <button 
-              onClick={(e) => clearChat(e)} 
-              title="Clear chat"
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              type="button"
-            >
-              <span className="text-base sm:text-lg">🗑️</span>
-            </button>
+      <div className="flex justify-between items-center p-4 border-b relative">
+        <span className="font-semibold">🤖 WebNirvaan AI</span>
+
+        {isMinimized && unread > 0 && (
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white
+          text-xs w-6 h-6 flex items-center justify-center rounded-full">
+            {unread}
+          </span>
+        )}
+
+        <div className="flex gap-3">
+          {messages.length > 0 && (
+            <button onClick={clearChat} title="Clear chat">🗑️</button>
           )}
-          {!isMinimized && (
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startTransition(() => setIsMinimized(!isMinimized));
-              }}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
-              title="Minimize"
-              type="button"
-            >
-              <span className="text-lg">—</span>
-            </button>
-          )}
-          {isMinimized && (
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startTransition(() => setIsMinimized(false));
-              }}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Expand"
-              type="button"
-            >
-              <span className="text-lg">▢</span>
-            </button>
-          )}
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              startTransition(() => setIsOpen(false));
-            }} 
-            className="p-1.5 sm:p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
-            title="Close"
-            type="button"
-          >
-            <span className="text-lg sm:text-xl">✕</span>
+          <button onClick={() => setIsMinimized(!isMinimized)}>
+            {isMinimized ? "▢" : "—"}
           </button>
+          <button onClick={() => setIsOpen(false)}>✕</button>
         </div>
       </div>
 
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.length === 0 && (
-              <div className="space-y-4 sm:space-y-5 pt-2">
-                <div className="text-center sm:text-left">
-                  <p className="text-base sm:text-lg font-medium text-gray-700 mb-1">
-                    How can I help you today?
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-500">
-                    Choose an option below or type your message
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-2">
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">How can I help you today?</p>
+                <div className="flex flex-wrap gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        sendMessage(s.prompt);
-                      }}
-                      className="px-3 py-2.5 sm:py-2 text-xs sm:text-sm rounded-xl border border-gray-200
-                      bg-gradient-to-r from-purple-50 to-blue-50
-                      hover:from-purple-100 hover:to-blue-100 hover:shadow-md
-                      active:scale-95 transition-all duration-200
-                      font-medium text-gray-700
-                      flex items-center justify-center gap-1.5"
+                      onClick={() => sendMessage(s.prompt)}
+                      className="px-3 py-2 text-sm rounded-full border
+                      bg-gradient-to-r from-purple-50 to-blue-50"
                     >
-                      <span>{s.label}</span>
+                      {s.label}
                     </button>
                   ))}
                 </div>
@@ -357,59 +243,33 @@ export default function AiChatbot() {
                 }`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2.5 sm:px-4 sm:py-2 text-sm sm:text-sm ${
+                  className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${
                     msg.role === "user"
-                      ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-md"
-                      : "bg-white text-gray-800 shadow-sm border border-gray-100"
+                      ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white"
+                      : "bg-white shadow"
                   }`}
                 >
-                  {msg.role === "assistant" ? (
-                    <>
-                      {msg.content ? (
-                        <div className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-900 prose-code:text-purple-600 prose-code:bg-purple-50 prose-code:px-1 prose-code:rounded">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : loading ? (
-                        <div className="flex items-center gap-1.5 py-1">
-                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                        </div>
-                      ) : null}
-
-                      {/* Quick actions after AI reply */}
-                      {i === messages.length - 1 && !loading && msg.content && (
-                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              sendMessage("I want pricing for my project");
-                            }}
-                            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
-                            bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
-                            font-medium text-gray-700"
-                          >
-                            💰 Get Pricing
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              sendMessage("Run an SEO audit for my website");
-                            }}
-                            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
-                            bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
-                            font-medium text-gray-700"
-                          >
-                            🔍 SEO Audit
-                          </button>
-                        </div>
-                      )}
-                    </>
+                  {msg.role === "assistant" && msg.content === "" && loading ? (
+                    <span className="italic text-gray-400">Typing…</span>
                   ) : (
-                    <p className="break-words">{msg.content}</p>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                   )}
+
+                  {msg.role === "assistant" &&
+                    i === messages.length - 1 &&
+                    !loading && (
+                      <a
+                        href={WHATSAPP_LINK}
+                        target="_blank"
+                        className="inline-block mt-3 text-xs px-3 py-1.5
+                        rounded-full bg-green-50 border border-green-200
+                        text-green-700"
+                      >
+                        Continue on WhatsApp →
+                      </a>
+                    )}
                 </div>
               </div>
             ))}
@@ -417,38 +277,21 @@ export default function AiChatbot() {
           </div>
 
           {/* Input */}
-          <div className="p-3 sm:p-4 border-t border-gray-200 bg-white flex gap-2 sm:gap-2">
+          <div className="p-3 border-t flex gap-2">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Type your message…"
-              className="flex-1 border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-2 text-sm sm:text-sm
-              focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none
-              placeholder:text-gray-400"
+              className="flex-1 border rounded-lg px-3 py-2 text-sm"
             />
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                sendMessage();
-              }}
-              disabled={loading || !input.trim()}
-              className="px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl text-white font-semibold text-sm
-              bg-gradient-to-r from-purple-600 to-blue-500
-              hover:from-purple-700 hover:to-blue-600
-              disabled:opacity-50 disabled:cursor-not-allowed
-              active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg
-              flex items-center justify-center min-w-[70px] sm:min-w-[80px]"
+              onClick={() => sendMessage()}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg text-white
+              bg-gradient-to-r from-purple-600 to-blue-500"
             >
-              {loading ? (
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
-                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                </span>
-              ) : (
-                'Send'
-              )}
+              Send
             </button>
           </div>
         </>

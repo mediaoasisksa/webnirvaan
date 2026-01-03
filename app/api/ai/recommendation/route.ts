@@ -4,35 +4,37 @@ import { NextResponse } from "next/server";
 export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const { pages, ecommerce, ai } = await req.json();
+  const { business, goal } = await req.json();
 
   const prompt = `
-You are a web development cost estimation expert in India.
+You are a senior web & AI consultant.
 
-Estimate the project cost and timeline based on:
-- Pages: ${pages}
-- E-commerce: ${ecommerce ? "Yes" : "No"}
-- AI features: ${ai ? "Yes" : "No"}
+Based on:
+- Business type: ${business}
+- Primary goal: ${goal}
+
+Recommend the best website solution.
 
 Return ONLY valid JSON in this format:
 
 {
-  "priceMin": number,
-  "priceMax": number,
+  "title": string,
+  "stack": string,
+  "features": string[],
   "timeline": string,
-  "breakdown": string[]
+  "summary": string
 }
 
-Pricing should be realistic for Indian agencies.
+Keep recommendations realistic for an Indian agency.
 `;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
+    temperature: 0.4,
     messages: [
-      { role: "system", content: "You estimate web project costs." },
+      { role: "system", content: "You recommend web solutions." },
       { role: "user", content: prompt },
     ],
-    temperature: 0.4,
   });
 
   const text = completion.choices[0].message.content || "{}";

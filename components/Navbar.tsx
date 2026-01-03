@@ -13,6 +13,9 @@ const navLinks = [
   { href: '#contact', label: 'Contact' },
 ]
 
+const WHATSAPP_LINK =
+  'https://wa.me/917827448032?text=Hi%20WebNirvaan%20👋%0AI’m%20interested%20in%20a%20website%20or%20AI%20solution.'
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -46,14 +49,19 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
+        isScrolled
+          ? 'bg-white shadow-lg'
+          : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
 
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-primary-600 via-accent-500 to-secondary-500 bg-clip-text text-transparent">
+          <Link
+            href="/"
+            className="text-2xl font-bold bg-gradient-to-r from-primary-600 via-accent-500 to-secondary-500 bg-clip-text text-transparent"
+          >
             WebNirvaan
           </Link>
 
@@ -72,9 +80,23 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* WhatsApp CTA */}
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-green-500 text-white px-5 py-2 rounded-lg
+              hover:bg-green-600 transition font-medium"
+            >
+              WhatsApp
+            </a>
+
+            {/* Get Started */}
             <Link
               href="#contact"
-              className="bg-gradient-to-r from-primary-600 to-secondary-500 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg"
+              className="bg-gradient-to-r from-primary-600 to-secondary-500
+              text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg"
             >
               Get Started
             </Link>
@@ -106,6 +128,16 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Mobile WhatsApp CTA */}
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-green-500 text-white px-5 py-2 rounded-lg text-center"
+            >
+              WhatsApp
+            </a>
           </div>
         )}
       </div>
