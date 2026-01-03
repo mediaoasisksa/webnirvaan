@@ -38,6 +38,7 @@ export default function AiChatbot() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const clearingRef = useRef(false);
 
   const pageContext =
     typeof window !== "undefined" ? window.location.pathname : "/";
@@ -73,12 +74,44 @@ export default function AiChatbot() {
   }, [messages, hydrated]);
 
   /* ---------- CLEAR CHAT ---------- */
-  const clearChat = useCallback(() => {
-    if (!confirm("Clear this conversation?")) return;
-    startTransition(() => {
-      localStorage.removeItem(STORAGE_KEY);
-      setMessages([]);
-      setInput("");
+  const clearChat = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
+    // Prevent multiple simultaneous clear operations
+    if (clearingRef.current) return;
+    clearingRef.current = true;
+    
+    // Use requestAnimationFrame to defer confirm and keep UI responsive
+    requestAnimationFrame(() => {
+      const shouldClear = window.confirm("Clear this conversation?");
+      clearingRef.current = false;
+      
+      if (!shouldClear) return;
+      
+      // Use scheduler API if available, otherwise requestIdleCallback
+      const scheduleWork = (callback: () => void) => {
+        if ('scheduler' in window && 'postTask' in (window as any).scheduler) {
+          (window as any).scheduler.postTask(callback, { priority: 'background' });
+        } else if ('requestIdleCallback' in window) {
+          requestIdleCallback(callback, { timeout: 100 });
+        } else {
+          setTimeout(callback, 0);
+        }
+      };
+      
+      scheduleWork(() => {
+        startTransition(() => {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (err) {
+            console.error("Failed to clear localStorage", err);
+          }
+          // Batch all state updates
+          setMessages([]);
+          setInput("");
+        });
+      });
     });
   }, []);
 
@@ -229,35 +262,51 @@ export default function AiChatbot() {
         <div className="flex gap-2 sm:gap-3 items-center text-gray-500">
           {messages.length > 0 && !isMinimized && (
             <button 
-              onClick={clearChat} 
+              onClick={(e) => clearChat(e)} 
               title="Clear chat"
               className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              type="button"
             >
               <span className="text-base sm:text-lg">🗑️</span>
             </button>
           )}
           {!isMinimized && (
             <button 
-              onClick={() => setIsMinimized(!isMinimized)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startTransition(() => setIsMinimized(!isMinimized));
+              }}
               className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
               title="Minimize"
+              type="button"
             >
               <span className="text-lg">—</span>
             </button>
           )}
           {isMinimized && (
             <button 
-              onClick={() => setIsMinimized(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startTransition(() => setIsMinimized(false));
+              }}
               className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
               title="Expand"
+              type="button"
             >
               <span className="text-lg">▢</span>
             </button>
           )}
           <button 
-            onClick={() => setIsOpen(false)} 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              startTransition(() => setIsOpen(false));
+            }} 
             className="p-1.5 sm:p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
             title="Close"
+            type="button"
           >
             <span className="text-lg sm:text-xl">✕</span>
           </button>
