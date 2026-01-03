@@ -219,26 +219,26 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="px-4 py-6 sm:px-0">
+    <div className="px-3 py-4 sm:px-4 sm:py-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 via-accent-500 to-secondary-500 bg-clip-text text-transparent">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary-600 via-accent-500 to-secondary-500 bg-clip-text text-transparent">
           Admin Dashboard
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
           Welcome to the WebNirvaan Admin Dashboard
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      {/* Tabs - Mobile optimized with scroll */}
+      <div className="border-b border-gray-200 mb-6 sm:mb-8 overflow-x-auto -mx-3 sm:mx-0">
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 px-3 sm:px-0 min-w-max sm:min-w-0" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200
+                group inline-flex items-center py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap
                 ${
                   activeTab === tab.id
                     ? 'border-primary-500 text-primary-600'
@@ -246,10 +246,11 @@ export default function AdminDashboard() {
                 }
               `}
             >
-              <span className={`mr-2 transition-transform duration-200 ${activeTab === tab.id ? 'scale-110' : ''}`}>
+              <span className={`mr-1.5 sm:mr-2 transition-transform duration-200 ${activeTab === tab.id ? 'scale-110' : ''}`}>
                 {tab.icon}
               </span>
-              {tab.name}
+              <span className="hidden sm:inline">{tab.name}</span>
+              <span className="sm:hidden text-xs">{tab.name.split(' ')[0]}</span>
             </button>
           ))}
         </nav>
@@ -261,12 +262,12 @@ export default function AdminDashboard() {
         {activeTab === 'dashboard' && (
           <div className="space-y-8 animate-fadeIn">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div className="bg-gradient-to-br from-white to-gray-50 overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 text-white shadow-lg">
+                      <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 text-white shadow-lg">
                         <svg
                           className="h-7 w-7"
                           fill="none"
@@ -284,10 +285,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-600 truncate">
+                        <dt className="text-xs sm:text-sm font-medium text-gray-600 truncate">
                           Total Contacts
                         </dt>
-                        <dd className="text-3xl font-bold text-gray-900 mt-1">
+                        <dd className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
                           {stats.loading ? (
                             <span className="inline-block w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></span>
                           ) : (
@@ -301,10 +302,10 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-gradient-to-br from-white to-gray-50 overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-br from-accent-500 to-primary-500 text-white shadow-lg">
+                      <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-gradient-to-br from-accent-500 to-primary-500 text-white shadow-lg">
                         <svg
                           className="h-7 w-7"
                           fill="none"
@@ -322,10 +323,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-600 truncate">
+                        <dt className="text-xs sm:text-sm font-medium text-gray-600 truncate">
                           Recent (7 days)
                         </dt>
-                        <dd className="text-3xl font-bold text-gray-900 mt-1">
+                        <dd className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
                           {stats.loading ? (
                             <span className="inline-block w-8 h-8 border-4 border-accent-200 border-t-accent-500 rounded-full animate-spin"></span>
                           ) : (
@@ -339,10 +340,10 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-gradient-to-br from-white to-gray-50 overflow-hidden shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-br from-secondary-500 to-accent-500 text-white shadow-lg">
+                      <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-gradient-to-br from-secondary-500 to-accent-500 text-white shadow-lg">
                         <svg
                           className="h-7 w-7"
                           fill="none"
@@ -360,10 +361,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-600 truncate">
+                        <dt className="text-xs sm:text-sm font-medium text-gray-600 truncate">
                           Growth Rate
                         </dt>
-                        <dd className="text-3xl font-bold text-gray-900 mt-1">
+                        <dd className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
                           {stats.loading ? (
                             <span className="inline-block w-8 h-8 border-4 border-secondary-200 border-t-secondary-500 rounded-full animate-spin"></span>
                           ) : stats.totalContacts > 0 ? (
@@ -381,14 +382,14 @@ export default function AdminDashboard() {
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">Quick Actions</h2>
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
                 <button
                   onClick={() => setActiveTab('contacts')}
-                  className="group relative rounded-xl border-2 border-gray-200 bg-white px-6 py-6 shadow-md flex items-center space-x-4 hover:border-primary-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="group relative rounded-xl border-2 border-gray-200 bg-white px-4 py-4 sm:px-6 sm:py-6 shadow-md flex items-center space-x-3 sm:space-x-4 hover:border-primary-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="flex-shrink-0">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                       <svg
                         className="h-6 w-6 text-white"
                         fill="none"
@@ -405,22 +406,22 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-base font-semibold text-gray-900">View Contacts</p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm sm:text-base font-semibold text-gray-900">View Contacts</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage all contact form submissions
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-primary-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('email-settings')}
-                  className="group relative rounded-xl border-2 border-gray-200 bg-white px-6 py-6 shadow-md flex items-center space-x-4 hover:border-accent-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="group relative rounded-xl border-2 border-gray-200 bg-white px-4 py-4 sm:px-6 sm:py-6 shadow-md flex items-center space-x-3 sm:space-x-4 hover:border-accent-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="flex-shrink-0">
-                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-accent-500 to-primary-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-accent-500 to-primary-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                       <svg
                         className="h-6 w-6 text-white"
                         fill="none"
@@ -443,12 +444,12 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-base font-semibold text-gray-900">Email Settings</p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm sm:text-base font-semibold text-gray-900">Email Settings</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Configure SMTP and email preferences
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-accent-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-accent-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -460,20 +461,20 @@ export default function AdminDashboard() {
         {/* Contacts Tab */}
         {activeTab === 'contacts' && (
           <div className="animate-fadeIn">
-            <div className="mb-6 flex justify-between items-center">
+            <div className="mb-4 sm:mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Contacts</h2>
-                <p className="mt-2 text-sm text-gray-600">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Contacts</h2>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                   View and manage all contact form submissions ({total} total)
                 </p>
               </div>
             </div>
 
             {/* Search */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -482,7 +483,7 @@ export default function AdminDashboard() {
                   placeholder="Search by name, email, or message..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-200"
+                  className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm transition-all duration-200"
                 />
               </div>
             </div>
@@ -506,31 +507,31 @@ export default function AdminDashboard() {
                   <ul className="divide-y divide-gray-200">
                     {contacts.map((contact) => (
                       <li key={contact.id} className="hover:bg-gray-50 transition-colors duration-150">
-                        <div className="px-6 py-5">
+                        <div className="px-3 py-4 sm:px-6 sm:py-5">
                           <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center">
-                                <p className="text-base font-semibold text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                                <p className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                                   {contact.name}
                                 </p>
-                                <p className="ml-3 text-sm text-gray-500">
+                                <p className="text-xs sm:text-sm text-gray-500 truncate sm:ml-3">
                                   {contact.email}
                                 </p>
                               </div>
                               {contact.phone && (
-                                <p className="mt-2 text-sm text-gray-600">
+                                <p className="mt-2 text-xs sm:text-sm text-gray-600">
                                   <span className="font-medium">Phone:</span> {contact.phone}
                                 </p>
                               )}
                               {contact.service && (
-                                <p className="mt-1 text-sm text-gray-600">
+                                <p className="mt-1 text-xs sm:text-sm text-gray-600">
                                   <span className="font-medium">Service:</span> {contact.service}
                                 </p>
                               )}
-                              <p className="mt-3 text-sm text-gray-700 leading-relaxed">
+                              <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-700 leading-relaxed break-words">
                                 {contact.message}
                               </p>
-                              <p className="mt-3 text-xs text-gray-400">
+                              <p className="mt-2 sm:mt-3 text-xs text-gray-400">
                                 {formatDate(contact.createdAt)}
                               </p>
                             </div>
@@ -542,24 +543,24 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Pagination */}
-                <div className="mt-6 flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200">
-                  <div className="text-sm text-gray-700">
+                <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white px-3 sm:px-4 py-3 rounded-lg shadow-sm border border-gray-200">
+                  <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
                     Showing <span className="font-medium">{skip + 1}</span> to{' '}
                     <span className="font-medium">{Math.min(skip + limit, total)}</span> of{' '}
                     <span className="font-medium">{total}</span> results
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 justify-center sm:justify-end">
                     <button
                       onClick={() => setSkip(Math.max(0, skip - limit))}
                       disabled={skip === 0}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex-1 sm:flex-initial"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setSkip(skip + limit)}
                       disabled={skip + limit >= total}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex-1 sm:flex-initial"
                     >
                       Next
                     </button>
@@ -573,9 +574,9 @@ export default function AdminDashboard() {
         {/* Email Settings Tab */}
         {activeTab === 'email-settings' && (
           <div className="animate-fadeIn">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Email Settings</h2>
-              <p className="mt-2 text-sm text-gray-600">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Email Settings</h2>
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                 Configure SMTP settings for contact form email notifications
               </p>
             </div>
@@ -583,11 +584,11 @@ export default function AdminDashboard() {
             {emailLoading ? (
               <div className="text-center py-12">
                 <div className="inline-block w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
-                <p className="mt-4 text-gray-500">Loading email settings...</p>
+                <p className="mt-4 text-sm text-gray-500">Loading email settings...</p>
               </div>
             ) : (
               <div className="bg-white shadow-lg sm:rounded-xl border border-gray-200">
-                <form onSubmit={handleEmailSubmit} className="p-8 space-y-6">
+                <form onSubmit={handleEmailSubmit} className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
                   {message && (
                     <div
                       className={`rounded-lg p-4 border-2 ${
@@ -716,11 +717,11 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end pt-4 border-t border-gray-200">
+                  <div className="flex justify-end pt-3 sm:pt-4 border-t border-gray-200">
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-primary-600 to-secondary-500 hover:from-primary-700 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+                      className="w-full sm:w-auto inline-flex justify-center py-2.5 sm:py-3 px-4 sm:px-6 border border-transparent shadow-lg text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-primary-600 to-secondary-500 hover:from-primary-700 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                     >
                       {saving ? (
                         <>
@@ -739,14 +740,14 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <div className="mt-4 sm:mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-4 sm:p-6">
+              <h3 className="text-xs sm:text-sm font-semibold text-blue-900 mb-2 sm:mb-3 flex items-center">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 Gmail Setup Instructions
               </h3>
-              <ol className="text-sm text-blue-800 list-decimal list-inside space-y-2">
+              <ol className="text-xs sm:text-sm text-blue-800 list-decimal list-inside space-y-1.5 sm:space-y-2">
                 <li>Enable 2-Step Verification on your Google Account</li>
                 <li>Go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-blue-900">App Passwords</a></li>
                 <li>Generate an App Password for "Mail"</li>

@@ -132,35 +132,69 @@ export default function AiChatbot() {
           setIsOpen(true);
           setIsMinimized(false);
         }}
-        className="fixed bottom-6 right-6 z-50
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50
         bg-gradient-to-r from-purple-600 to-blue-500
-        text-white px-4 py-3 rounded-full shadow-lg"
+        text-white px-4 py-3 rounded-full shadow-lg hover:shadow-xl
+        transition-all duration-200 text-sm sm:text-base
+        flex items-center gap-2"
       >
-        🤖 Chat with AI
+        <span className="text-lg sm:text-xl">🤖</span>
+        <span className="hidden sm:inline">Chat with AI</span>
+        <span className="sm:hidden">AI</span>
       </button>
     );
   }
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl
+      className={`fixed z-50 bg-white shadow-2xl
       flex flex-col transition-all duration-300
-      ${isMinimized ? "h-14 w-72" : "h-[520px] w-96"}`}
+      ${
+        isMinimized
+          ? "bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-64 sm:w-72 rounded-2xl"
+          : "inset-2 sm:inset-4 sm:bottom-6 sm:right-6 sm:inset-auto sm:h-[520px] sm:w-96 sm:rounded-2xl rounded-xl"
+      }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b font-semibold">
-        <span>🤖 WebNirvaan AI</span>
-        <div className="flex gap-3 items-center text-gray-500">
-          {messages.length > 0 && (
-            <button onClick={clearChat} title="Clear chat">
-              🗑️
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50 sm:bg-white">
+        <div className="flex items-center gap-2">
+          <span className="text-lg sm:text-xl">🤖</span>
+          <span className="font-semibold text-sm sm:text-base text-gray-900">WebNirvaan AI</span>
+        </div>
+        <div className="flex gap-2 sm:gap-3 items-center text-gray-500">
+          {messages.length > 0 && !isMinimized && (
+            <button 
+              onClick={clearChat} 
+              title="Clear chat"
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <span className="text-base sm:text-lg">🗑️</span>
             </button>
           )}
-          <button onClick={() => setIsMinimized(!isMinimized)}>
-            {isMinimized ? "▢" : "—"}
-          </button>
-          <button onClick={() => setIsOpen(false)} className="hover:text-red-500">
-            ✕
+          {!isMinimized && (
+            <button 
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block"
+              title="Minimize"
+            >
+              <span className="text-lg">—</span>
+            </button>
+          )}
+          {isMinimized && (
+            <button 
+              onClick={() => setIsMinimized(false)}
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Expand"
+            >
+              <span className="text-lg">▢</span>
+            </button>
+          )}
+          <button 
+            onClick={() => setIsOpen(false)} 
+            className="p-1.5 sm:p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
+            title="Close"
+          >
+            <span className="text-lg sm:text-xl">✕</span>
           </button>
         </div>
       </div>
@@ -168,22 +202,30 @@ export default function AiChatbot() {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
             {messages.length === 0 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-500">
-                  How can I help you today?
-                </p>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-4 sm:space-y-5 pt-2">
+                <div className="text-center sm:text-left">
+                  <p className="text-base sm:text-lg font-medium text-gray-700 mb-1">
+                    How can I help you today?
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    Choose an option below or type your message
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
                       onClick={() => sendMessage(s.prompt)}
-                      className="px-3 py-2 text-sm rounded-full border
+                      className="px-3 py-2.5 sm:py-2 text-xs sm:text-sm rounded-xl border border-gray-200
                       bg-gradient-to-r from-purple-50 to-blue-50
-                      hover:from-purple-100 hover:to-blue-100"
+                      hover:from-purple-100 hover:to-blue-100 hover:shadow-md
+                      active:scale-95 transition-all duration-200
+                      font-medium text-gray-700
+                      flex items-center justify-center gap-1.5"
                     >
-                      {s.label}
+                      <span>{s.label}</span>
                     </button>
                   ))}
                 </div>
@@ -198,28 +240,38 @@ export default function AiChatbot() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2.5 sm:px-4 sm:py-2 text-sm sm:text-sm ${
                     msg.role === "user"
-                      ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white"
-                      : "bg-white text-gray-800 shadow"
+                      ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-md"
+                      : "bg-white text-gray-800 shadow-sm border border-gray-100"
                   }`}
                 >
                   {msg.role === "assistant" ? (
                     <>
-                      <div className="prose prose-sm max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content || (loading ? "Typing…" : "")}
-                        </ReactMarkdown>
-                      </div>
+                      {msg.content ? (
+                        <div className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-900 prose-code:text-purple-600 prose-code:bg-purple-50 prose-code:px-1 prose-code:rounded">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : loading ? (
+                        <div className="flex items-center gap-1.5 py-1">
+                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                          <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                        </div>
+                      ) : null}
 
                       {/* Quick actions after AI reply */}
-                      {i === messages.length - 1 && !loading && (
-                        <div className="flex gap-2 mt-2">
+                      {i === messages.length - 1 && !loading && msg.content && (
+                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
                           <button
                             onClick={() =>
                               sendMessage("I want pricing for my project")
                             }
-                            className="text-xs px-3 py-1 rounded-full border"
+                            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
+                            bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
+                            font-medium text-gray-700"
                           >
                             💰 Get Pricing
                           </button>
@@ -227,7 +279,9 @@ export default function AiChatbot() {
                             onClick={() =>
                               sendMessage("Run an SEO audit for my website")
                             }
-                            className="text-xs px-3 py-1 rounded-full border"
+                            className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
+                            bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
+                            font-medium text-gray-700"
                           >
                             🔍 SEO Audit
                           </button>
@@ -235,7 +289,7 @@ export default function AiChatbot() {
                       )}
                     </>
                   ) : (
-                    msg.content
+                    <p className="break-words">{msg.content}</p>
                   )}
                 </div>
               </div>
@@ -244,23 +298,35 @@ export default function AiChatbot() {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t flex gap-2">
+          <div className="p-3 sm:p-4 border-t border-gray-200 bg-white flex gap-2 sm:gap-2">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
               placeholder="Type your message…"
-              className="flex-1 border rounded-lg px-3 py-2 text-sm
-              focus:ring-2 focus:ring-purple-500 outline-none"
+              className="flex-1 border border-gray-300 rounded-xl px-3 sm:px-4 py-2.5 sm:py-2 text-sm sm:text-sm
+              focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none
+              placeholder:text-gray-400"
             />
             <button
               onClick={() => sendMessage()}
-              disabled={loading}
-              className="px-4 py-2 rounded-lg text-white font-semibold
+              disabled={loading || !input.trim()}
+              className="px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl text-white font-semibold text-sm
               bg-gradient-to-r from-purple-600 to-blue-500
-              disabled:opacity-60"
+              hover:from-purple-700 hover:to-blue-600
+              disabled:opacity-50 disabled:cursor-not-allowed
+              active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg
+              flex items-center justify-center min-w-[70px] sm:min-w-[80px]"
             >
-              Send
+              {loading ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                  <span className="inline-block w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                </span>
+              ) : (
+                'Send'
+              )}
             </button>
           </div>
         </>
