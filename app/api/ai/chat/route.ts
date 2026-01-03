@@ -1,22 +1,46 @@
 import { openai } from "@/lib/openai";
-import { NextResponse } from "next/server";
+
+export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const { message } = await req.json();
+  const { messages } = await req.json();
 
-  const completion = await openai.chat.completions.create({
+  const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
+    stream: true,
     messages: [
       {
         role: "system",
         content:
-          "You are WebNirvaan AI, an expert web & AI consultant. Be concise and helpful.",
+          "You are WebNirvaan AI, a professional web & AI consultant. Remember context and respond concisely.",
       },
-      { role: "user", content: message },
+      ...messages,
     ],
   });
 
-  return NextResponse.json({
-    reply: completion.choices[0].message.content,
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of response) {
+          const content = chunk.choices[0]?.delta?.content;
+          if (content) {
+            controller.enqueue(encoder.encode(content));
+          }
+        }
+      } catch (err) {
+        console.error("Stream error:", err);
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-cache",
+    },
   });
 }
