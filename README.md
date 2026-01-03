@@ -7,7 +7,7 @@ A modern, professional website for showcasing web development, app development, 
 - 🎨 Modern, responsive design with Tailwind CSS
 - ⚡ Built with Next.js 14 and React  
 - 📱 Fully responsive and mobile-friendly
-- 🚀 Fast performance and SEO optimized
+- 🚀 Fast performance and SEO optimized..
 - 💼 Services showcase section
 - 📧 Contact form with database storage and email notifications
 - 🌟 Beautiful animations and transitions
