@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, startTransition } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -49,23 +49,41 @@ export default function AiChatbot() {
     setHydrated(true);
   }, []);
 
-  /* ---------- SAVE TO LOCAL STORAGE ---------- */
+  /* ---------- SAVE TO LOCAL STORAGE (DEBOUNCED) ---------- */
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    
+    // Debounce localStorage save
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      } catch (e) {
+        console.error("Failed to save to localStorage", e);
+      }
+    }, 300);
+
+    // Scroll to bottom (non-blocking)
+    requestAnimationFrame(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+
+    return () => clearTimeout(timeoutId);
   }, [messages, hydrated]);
 
   /* ---------- CLEAR CHAT ---------- */
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     if (!confirm("Clear this conversation?")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setMessages([]);
-    setInput("");
-  };
+    startTransition(() => {
+      localStorage.removeItem(STORAGE_KEY);
+      setMessages([]);
+      setInput("");
+    });
+  }, []);
 
   /* ---------- SEND MESSAGE ---------- */
-  const sendMessage = async (text?: string) => {
+  const sendMessage = useCallback(async (text?: string) => {
     const messageText = text ?? input;
     if (!messageText.trim() || loading) return;
 
@@ -76,53 +94,100 @@ export default function AiChatbot() {
 
     const contextMessages = [...messages, userMessage];
 
-    setMessages(contextMessages);
-    setInput("");
+    // Batch state updates
+    startTransition(() => {
+      setMessages([...contextMessages, { role: "assistant", content: "" }]);
+      setInput("");
+    });
     setLoading(true);
 
-    // placeholder assistant message
-    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-    const res = await fetch("/api/ai/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: contextMessages,
-        page: pageContext,
-      }),
-    });
-
-    const reader = res.body?.getReader();
-    const decoder = new TextDecoder();
-
-    if (!reader) {
-      setLoading(false);
-      return;
-    }
-
-    let done = false;
-
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-
-      const chunk = decoder.decode(value || new Uint8Array(), {
-        stream: true,
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: contextMessages,
+          page: pageContext,
+        }),
       });
 
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        setLoading(false);
+        return;
+      }
+
+      let done = false;
+      let buffer = "";
+      let lastUpdate = Date.now();
+      const UPDATE_INTERVAL = 50; // Throttle updates to every 50ms
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+        }
+
+        // Throttle state updates to prevent blocking
+        const now = Date.now();
+        if (done || now - lastUpdate >= UPDATE_INTERVAL) {
+          const contentToAdd = buffer;
+          buffer = "";
+          lastUpdate = now;
+
+          startTransition(() => {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const lastIndex = updated.length - 1;
+              if (lastIndex >= 0) {
+                updated[lastIndex] = {
+                  ...updated[lastIndex],
+                  content: updated[lastIndex].content + contentToAdd,
+                };
+              }
+              return updated;
+            });
+          });
+        }
+      }
+
+      // Flush remaining buffer
+      if (buffer) {
+        startTransition(() => {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
+            if (lastIndex >= 0) {
+              updated[lastIndex] = {
+                ...updated[lastIndex],
+                content: updated[lastIndex].content + buffer,
+              };
+            }
+            return updated;
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
       setMessages((prev) => {
         const updated = [...prev];
         const lastIndex = updated.length - 1;
-        updated[lastIndex] = {
-          ...updated[lastIndex],
-          content: updated[lastIndex].content + chunk,
-        };
+        if (lastIndex >= 0 && updated[lastIndex].content === "") {
+          updated[lastIndex] = {
+            ...updated[lastIndex],
+            content: "Sorry, an error occurred. Please try again.",
+          };
+        }
         return updated;
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
+  }, [input, messages, loading, pageContext]);
 
   /* ---------- CLOSED STATE ---------- */
   if (!isOpen) {
@@ -217,7 +282,10 @@ export default function AiChatbot() {
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
-                      onClick={() => sendMessage(s.prompt)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        sendMessage(s.prompt);
+                      }}
                       className="px-3 py-2.5 sm:py-2 text-xs sm:text-sm rounded-xl border border-gray-200
                       bg-gradient-to-r from-purple-50 to-blue-50
                       hover:from-purple-100 hover:to-blue-100 hover:shadow-md
@@ -266,9 +334,10 @@ export default function AiChatbot() {
                       {i === messages.length - 1 && !loading && msg.content && (
                         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
                           <button
-                            onClick={() =>
-                              sendMessage("I want pricing for my project")
-                            }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              sendMessage("I want pricing for my project");
+                            }}
                             className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
                             bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
                             font-medium text-gray-700"
@@ -276,9 +345,10 @@ export default function AiChatbot() {
                             💰 Get Pricing
                           </button>
                           <button
-                            onClick={() =>
-                              sendMessage("Run an SEO audit for my website")
-                            }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              sendMessage("Run an SEO audit for my website");
+                            }}
                             className="text-xs px-3 py-1.5 rounded-lg border border-gray-200
                             bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all
                             font-medium text-gray-700"
@@ -309,7 +379,10 @@ export default function AiChatbot() {
               placeholder:text-gray-400"
             />
             <button
-              onClick={() => sendMessage()}
+              onClick={(e) => {
+                e.preventDefault();
+                sendMessage();
+              }}
               disabled={loading || !input.trim()}
               className="px-4 sm:px-5 py-2.5 sm:py-2 rounded-xl text-white font-semibold text-sm
               bg-gradient-to-r from-purple-600 to-blue-500
