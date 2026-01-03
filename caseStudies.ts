@@ -17,6 +17,6 @@ export const caseStudies = [
         "🚀 Scalable AI-ready architecture",
       ],
       tech: ["Next.js", "Node.js", "PostgreSQL", "AI"],
-    },
+    }, 
   ];
   
