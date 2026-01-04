@@ -5,7 +5,7 @@
 The admin dashboard allows you to:
 - View and manage contact form submissions
 - Configure email settings (SMTP) through the web interface
-- Manage contact information
+- Manage contact information 
 
 ## Initial Setup
 
