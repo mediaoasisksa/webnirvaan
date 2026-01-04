@@ -8,7 +8,7 @@ The admin dashboard allows you to:
 - Manage contact information 
 
 ## Initial Setup
-
+ 
 ### 1. Install Dependencies
 
 ```bash
