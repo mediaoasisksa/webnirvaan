@@ -96,6 +96,26 @@ export default function AdminLayout({
                 >
                   Email Settings
                 </Link>
+                <Link
+                  href="/admin/email-templates"
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
+                    pathname === '/admin/email-templates'
+                      ? 'border-primary-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Email Templates
+                </Link>
+                <Link
+                  href="/admin/email-tracking"
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors ${
+                    pathname === '/admin/email-tracking'
+                      ? 'border-primary-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Email Tracking
+                </Link>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -166,6 +186,28 @@ export default function AdminLayout({
                 }`}
               >
                 Email Settings
+              </Link>
+              <Link
+                href="/admin/email-templates"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname === '/admin/email-templates'
+                    ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-500'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                Email Templates
+              </Link>
+              <Link
+                href="/admin/email-tracking"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  pathname === '/admin/email-tracking'
+                    ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-500'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                Email Tracking
               </Link>
             </div>
           </div>

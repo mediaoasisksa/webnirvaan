@@ -1,3 +1,7 @@
+'use client'
+
+import Link from 'next/link'
+
 const services = [
   {
     title: 'Web Development',
@@ -95,16 +99,16 @@ export default function Services() {
               </h3>
 
               {/* Description */}
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-600 mb-6 leading-relaxed text-sm">
                 {service.description}
               </p>
 
               {/* Features */}
-              <ul className="space-y-2">
+              <ul className="space-y-2.5 mb-6">
                 {service.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center text-gray-700">
+                  <li key={featureIndex} className="flex items-start text-sm text-gray-700">
                     <svg
-                      className="w-5 h-5 text-secondary-500 mr-2 flex-shrink-0"
+                      className="w-5 h-5 text-secondary-500 mr-2.5 flex-shrink-0 mt-0.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -116,10 +120,18 @@ export default function Services() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    {feature}
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
+
+              {/* CTA */}
+              <Link
+                href={`#contact?service=${encodeURIComponent(service.title.toLowerCase().replace(/\s+/g, '-'))}`}
+                className="inline-block text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                Get Quote →
+              </Link>
             </div>
           ))}
         </div>

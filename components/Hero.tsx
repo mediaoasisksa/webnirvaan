@@ -8,16 +8,19 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Main Headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Transform Your Ideas Into
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            We Build High-Performing Websites & Apps
             <span className="block bg-gradient-to-r from-primary-600 via-accent-500 to-secondary-500 bg-clip-text text-transparent mt-2">
-              Digital Excellence
+              That Drive Growth for Small & Mid-Size Businesses
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl md:text-2xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            We specialize in creating stunning web applications and mobile apps that drive business growth and deliver exceptional user experiences.
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Increase conversions, launch faster, and scale your business with custom web and mobile solutions. 
+            <span className="block mt-2 font-semibold text-gray-900">
+              Average 20% revenue growth for our clients.
+            </span>
           </p>
 
           {/* CTA Buttons */}
@@ -26,29 +29,39 @@ export default function Hero() {
               href="#contact"
               className="bg-gradient-to-r from-primary-600 to-secondary-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-primary-700 hover:to-secondary-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              Get Started Today
+              Get a Free Quote
+            </Link>
+            <Link
+              href="#portfolio"
+              className="bg-white text-primary-600 border-2 border-primary-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary-50 transition-all duration-200"
+            >
+              View Case Studies
             </Link>
             <Link
               href="#services"
-              className="bg-white text-primary-600 border-2 border-primary-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-primary-50 transition-all duration-200"
+              className="bg-gray-100 text-gray-700 border-2 border-gray-200 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-200 transition-all duration-200"
             >
               Our Services
             </Link>
           </div>
 
           {/* Stats or Features */}
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent mb-2">100+</div>
-              <div className="text-gray-600 font-medium">Projects Delivered</div>
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-500 bg-clip-text text-transparent mb-1">100+</div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">Projects Delivered</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent-500 to-primary-600 bg-clip-text text-transparent mb-2">50+</div>
-              <div className="text-gray-600 font-medium">Happy Clients</div>
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-accent-500 to-primary-600 bg-clip-text text-transparent mb-1">50+</div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">Happy Clients</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-secondary-500 to-accent-500 bg-clip-text text-transparent mb-2">5+</div>
-              <div className="text-gray-600 font-medium">Years Experience</div>
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-secondary-500 to-accent-500 bg-clip-text text-transparent mb-1">20%</div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">Avg Revenue Growth</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent mb-1">5+</div>
+              <div className="text-sm md:text-base text-gray-600 font-medium">Years Experience</div>
             </div>
           </div>
         </div>
