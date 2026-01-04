@@ -61,7 +61,7 @@ export default function AiChatbot() {
     // Debounce localStorage save
     const timeoutId = setTimeout(() => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
       } catch (e) {
         console.error("Failed to save to localStorage", e);
       }
@@ -107,13 +107,13 @@ export default function AiChatbot() {
       scheduleWork(() => {
         startTransition(() => {
           try {
-            localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
           } catch (err) {
             console.error("Failed to clear localStorage", err);
           }
           // Batch all state updates
-          setMessages([]);
-          setInput("");
+    setMessages([]);
+    setInput("");
         });
       });
     });
@@ -134,36 +134,36 @@ export default function AiChatbot() {
     // Batch state updates
     startTransition(() => {
       setMessages([...contextMessages, { role: "assistant", content: "" }]);
-      setInput("");
+    setInput("");
     });
     setLoading(true);
 
     try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: contextMessages,
-          page: pageContext,
-        }),
-      });
+    const res = await fetch("/api/ai/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: contextMessages,
+        page: pageContext,
+      }),
+    });
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
+    const reader = res.body?.getReader();
+    const decoder = new TextDecoder();
 
-      if (!reader) {
-        setLoading(false);
-        return;
-      }
+    if (!reader) {
+      setLoading(false);
+      return;
+    }
 
-      let done = false;
+    let done = false;
       let buffer = "";
       let lastUpdate = Date.now();
       const UPDATE_INTERVAL = 50; // Throttle updates to every 50ms
 
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
 
         if (value) {
           buffer += decoder.decode(value, { stream: true });
@@ -177,17 +177,17 @@ export default function AiChatbot() {
           lastUpdate = now;
 
           startTransition(() => {
-            setMessages((prev) => {
-              const updated = [...prev];
-              const lastIndex = updated.length - 1;
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastIndex = updated.length - 1;
               if (lastIndex >= 0) {
-                updated[lastIndex] = {
-                  ...updated[lastIndex],
+        updated[lastIndex] = {
+          ...updated[lastIndex],
                   content: updated[lastIndex].content + contentToAdd,
-                };
+        };
               }
-              return updated;
-            });
+        return updated;
+      });
           });
         }
       }
@@ -222,7 +222,7 @@ export default function AiChatbot() {
         return updated;
       });
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   }, [input, messages, loading, pageContext]);
 
@@ -370,7 +370,7 @@ export default function AiChatbot() {
               type="button"
             >
               <span className="text-lg">▢</span>
-            </button>
+          </button>
           )}
           <button 
             onClick={(e) => {
@@ -395,8 +395,8 @@ export default function AiChatbot() {
               <div className="space-y-4 sm:space-y-5 pt-2">
                 <div className="text-center sm:text-left">
                   <p className="text-base sm:text-lg font-medium text-gray-700 mb-1">
-                    How can I help you today?
-                  </p>
+                  How can I help you today?
+                </p>
                   <p className="text-xs sm:text-sm text-gray-500">
                     Choose an option below or type your message
                   </p>
@@ -441,10 +441,10 @@ export default function AiChatbot() {
                     <>
                       {msg.content ? (
                         <div className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-strong:text-gray-900 prose-code:text-purple-600 prose-code:bg-purple-50 prose-code:px-1 prose-code:rounded">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {msg.content}
-                          </ReactMarkdown>
-                        </div>
+                        </ReactMarkdown>
+                      </div>
                       ) : loading ? (
                         <div className="flex items-center gap-1.5 py-1">
                           <span className="inline-block w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
