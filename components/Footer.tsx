@@ -19,8 +19,10 @@ const socialLinks = [
   { href: "https://www.instagram.com/", label: "Instagram" },
   { href: "https://x.com/", label: "X (Twitter)" },
 ];
-
-function SocialIcon({ label }) {
+type SocialIconProps = {
+  label: string;
+};
+function SocialIcon({ label }: SocialIconProps) {
   // Minimal icons (no extra dependency). Swap for your icon set if you have one.
   const base = "w-5 h-5";
   if (label.toLowerCase().includes("linkedin")) {
